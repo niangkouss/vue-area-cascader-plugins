@@ -17,7 +17,7 @@
 				<div v-for="(itemAry,indexAry) in listTree" :data-index="indexAry" v-show="indexAry == listIndex">
 					<ul class="area-lists">
 						<li v-for="(item,index) in itemAry">
-							<a href="javascript:;" :data-value="item.value" :data-label="item.label" @click="selectProvince(item.value,item.label,indexAry,index)">
+							<a href="javascript:;" :data-value="item.value" :data-label="item.label" @click="selectProvince(item.value,item.label,indexAry,index)" :class="{'cur': index == curAry[indexAry]}">
 								{{item.label}}
 							</a>
 						</li>
@@ -75,7 +75,8 @@
 				wrapper:null,
 				isClick:this.trigger === 'click',
 				tag2:false,
-				isColor:false
+				isColor:false,
+				curAry:[]
 			}
 		},
 		beforeCreate() {
@@ -182,10 +183,16 @@
 				};
 				if(isSelected){
 					Vue.set(this.tabAry,indexAry+1,obj);
+					this.curAry.splice(indexAry);
+					//this.tabAry.splice(indexAry+2);
 				}else{
 					if(child){
 						this.tabAry.push(obj);
 					}
+				}
+				this.curAry[indexAry] = index;
+				if(!child){
+					this.tabAry.splice(indexAry+1);
 				}
 				this.selectCity(indexAry);
 				this.handleChildren(indexAry,index,obj);
@@ -199,9 +206,8 @@
 				let child = this.listTree[indexAry][index].children;
 				if(hasChild){
 					this.listTree.splice(indexAry+1);
-					this.tabAry.splice(indexAry+2);
 				}
-				console.log(this.tabAry);
+				this.tabAry.splice(indexAry+2);
 				if(child){
 					this.listTree.push(child);
 					this.initTabAry(indexAry);
