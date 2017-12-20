@@ -1,10 +1,10 @@
 <template>
-	<div class="area-wrap" @mouseenter="toSelect" @mouseleave="leave" :ref="tag">
-		<div class="text-wrap" ref="textWrap">
+	<div class="area-wrap" @mouseenter="toSelect" @mouseleave="leave" :data-tag="tag">
+		<div class="text-wrap" ref="textWrap" @click="toSelectClick($event)">
 			<span class="text">{{area}}</span>
-			<i class="arrow"></i>
+			<i :class="['arrow',{'open':isHover}]"></i>
 		</div>
-		<div class="content-wrapper" v-show="isHover">
+		<div class="content-wrapper" v-show="isHover" style="display:none;">
 			<i class="close" @click="toClose"></i>
 			<div class="area-tab">
 				<a href="javascript:;" v-for="(item,index) in tabAry" :data-label="item.label" :data-value="item.value" @click="selectCity(index)" :class="{'cur':item.isCur}">
@@ -39,6 +39,9 @@
 			datas: {
 				type: Array,
 				required: true
+			},
+			trigger:{
+				type:String
 			}
 		},
 		data() {
@@ -54,158 +57,6 @@
 					}
 				],
 				resultAry:["请选择"],
-			/*	areaTree:[
-					{
-						"label":"北京",
-						"value":1,
-						"children":[
-							{
-								"label":"北京12",
-								"value":12,
-								"children":[
-									{
-										"label":"北京121",
-										"value":121
-									},
-									{
-										"label":"北京1221北京121",
-										"value":121
-									},
-									{
-										"label":"北京12京121",
-										"value":121
-									},
-									{
-										"label":"北12",
-										"value":122
-									},
-									{
-										"label":"北12",
-										"value":122
-									},
-									{
-										"label":"北京123",
-										"value":123
-									}
-								]
-							},
-							{
-								"label":"北京13",
-								"value":13,
-								"children":[
-									{
-										"label":"北京131",
-										"value":387878781
-									},
-									{
-										"label":"北京132",
-										"value":32
-									},
-									{
-										"label":"北京133",
-										"value":33
-									}
-								]
-							},
-							{
-								"label":"北京14",
-								"value":1456563
-							}
-						]
-					},
-					{
-						"label":"广东",
-						"value":1,
-						"children":[
-							{
-								"label":"广东12",
-								"value":12,
-								"children":[
-									{
-										"label":"广东121",
-										"value":121
-									},
-									{
-										"label":"广东122",
-										"value":122
-									},
-									{
-										"label":"广东123",
-										"value":123
-									}
-								]
-							},
-							{
-								"label":"广东13",
-								"value":13,
-								"children":[
-									{
-										"label":"广东131",
-										"value":387878781
-									},
-									{
-										"label":"广东132",
-										"value":32
-									},
-									{
-										"label":"广东133",
-										"value":33
-									}
-								]
-							},
-							{
-								"label":"广东14",
-								"value":1456563
-							}
-						]
-					},
-					{
-						"label":"上海",
-						"value":1,
-						"children":[
-							{
-								"label":"上海12",
-								"value":12,
-								"children":[
-									{
-										"label":"上海121",
-										"value":121
-									},
-									{
-										"label":"上海122",
-										"value":122
-									},
-									{
-										"label":"上海123",
-										"value":123
-									}
-								]
-							},
-							{
-								"label":"上海13",
-								"value":13,
-								"children":[
-									{
-										"label":"上海131",
-										"value":387878781
-									},
-									{
-										"label":"上海132",
-										"value":32
-									},
-									{
-										"label":"上海133",
-										"value":33
-									}
-								]
-							},
-							{
-								"label":"上海14",
-								"value":1456563
-							}
-						]
-					}
-				],*/
 				listTree:[
 
 				],
@@ -213,24 +64,40 @@
 				listIndex:0,
 				resultVal:"",
 				wrapHeight:0,
-				hoverHeight:0
+				hoverHeight:0,
+				wrapper:null,
+				isClick:this.trigger === 'click',
+				tag2:false
 			}
 		},
 		beforeCreate() {
 		},
 		created() {
-			this.tag = "area"+Math.random();
 		},
 		beforeMount() {
+			this.tag = "area"+Math.random();
 		},
 		mounted() {
 			this.listTree[0] = this.datas;
-			let wrapper = this.$refs[this.tag];
-			this.wrapHeight = $(wrapper).height();
+			$("body .area-wrap").each( (index,obj)=> {
+				obj.dataset.tag == this.tag? this.wrapper = obj:void 0;
+			});
+			this.wrapHeight = $(this.wrapper).height();
 			this.hoverHeight = this.wrapHeight+1;
-			$(wrapper).children(".content-wrapper").css("top",this.wrapHeight);
-			console.log($(wrapper).children(".text"));
-			$(wrapper).find(".text").css("line-height",this.wrapHeight+"px");
+			$(this.wrapper).children(".content-wrapper").css("top",this.wrapHeight);
+			$(this.wrapper).find(".text").css("line-height",this.wrapHeight+"px");
+			if(this.isClick){
+				$("body").click((e)=>{
+					this.tag2 = false;
+					let ary = $(e.target).parents();
+					ary.each((index)=>{
+						if($(ary[index]).hasClass('area-wrap') == true){
+							this.tag2 = true;
+						}
+					});
+				});
+			}
+
 		},
 		beforeUpdate() {
 		},
@@ -246,18 +113,39 @@
 		},
 		methods: {
 			toSelect(){
-				this.isHover = true;
-				this.borerBottomColor = $(this.$refs.textWrap).css("border-bottom");
-				$(this.$refs.textWrap).css("border-bottom",0);
-				$(this.$refs.textWrap).css("height",this.hoverHeight);
+				if(this.isClick){
+					return;
+				}
+				this.store();
+			},
+			toSelectClick(){
+				if(!this.isClick){
+					return;
+				}
+				this.store();
 			},
 			leave(){
-				this.isHover = false;
-				$(this.$refs.textWrap).css("border-bottom",this.borerBottomColor);
-				$(this.$refs.textWrap).css("height",this.wrapHeight);
+				if(this.isClick){
+					return;
+				}
+				this.restore();
+			},
+			leaveClick(){
+				this.restore();
 			},
 			toClose(){
+				this.restore();
+			},
+			store(){
+				this.isHover = true;
+				this.borerBottomColor = $(this.wrapper).find(".text-wrap").css("border-bottom");
+				$(this.wrapper).find(".text-wrap").css("border-bottom",0);
+				$(this.wrapper).find(".text-wrap").css("height",this.hoverHeight);
+			},
+			restore(){
 				this.isHover = false;
+				$(this.wrapper).find(".text-wrap").css("border-bottom",this.borerBottomColor);
+				$(this.wrapper).find(".text-wrap").css("height",this.wrapHeight);
 			},
 			selectCity(index){
 				this.listIndex = index;
@@ -274,21 +162,19 @@
 					isCur:true
 				};
 				if(isSelected){
-					//this.tabAry[indexAry] = obj;
 					Vue.set(this.tabAry,indexAry,obj);
 				}else{
 					this.tabAry.push(obj);
 				}
 				this.selectCity(indexAry);
-				/*替换tab,加红框*/
 				this.handleChildren(indexAry,index);
 			},
 			handleChildren(indexAry,index){
 				let hasChild = this.listTree[indexAry+1];
 				let child = this.listTree[indexAry][index].children;
 				if(hasChild){
-					this.listTree.splice(indexAry+1);//$remove(item)
-					this.tabAry.splice(indexAry+1);//$remove(item)
+					this.listTree.splice(indexAry+1);
+					this.tabAry.splice(indexAry+1);
 				}
 				if(child){
 					this.listTree.push(child);
@@ -321,6 +207,10 @@
 				this.resultVal = this.resultVal.substring(0,this.resultVal.length-1);
 				this.$emit('change', this.resultVal);
 				this.$emit('input', this.area);
+				if(this.isClick){
+					this.leaveClick();
+				}
+
 			}
 		},
 		filters: {},
@@ -330,6 +220,12 @@
 		watch: {
 			value(val) {
 				this.area = val;
+			},
+			tag2(cur){
+				if(!cur){
+					this.leaveClick();
+				}
+
 			}
 		}
 	}
@@ -371,6 +267,10 @@
 				height: 17px;
 				background: url("./img/ico.png") no-repeat 3px 5px;
 				overflow: hidden;
+				transition: .5s;
+				&.open{
+					transform: rotate(-180deg);
+				}
 			}
 		}
 		.content-wrapper{
@@ -393,20 +293,20 @@
 				right: 12px;
 				width: 17px;
 				height: 17px;
-				background:  url("./img/ico.png") no-repeat 3px -124px;
+				background:  url("./img/close.svg") no-repeat;
 				cursor: pointer;
 			}
 			.area-tab{
 				cursor: default;
 				width: 100%;
 				height: 25px;
-				border-bottom: 2px solid #e4393c;
+				border-bottom: 2px solid #3380F4;
 				overflow: visible;
 				a{
 					&.cur{
 						height: 25px;
 						background-color: #fff;
-						border: 2px solid #e4393c;
+						border: 2px solid #3380F4;
 						border-bottom: 0;
 						padding: 0 25px 0 6px;
 						line-height: 22px;
@@ -428,7 +328,7 @@
 
 					}
 					i{
-						background: url(//img12.360buyimg.com/uba/jfs/t4660/73/4024943067/1159/f1a90f68/59088392N8b6279bb.png) no-repeat 0 5px;
+						background: url("./img/ico.png") no-repeat 0 5px;
 						position: absolute;
 						right: 6px;
 						top: 5px;
