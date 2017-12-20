@@ -45,6 +45,10 @@
 			},
 			color:{
 				type:String
+			},
+			subboxTips:{
+				type:String,
+				default:'请选择'
 			}
 		},
 		data() {
@@ -55,7 +59,7 @@
 				tabAry:[
 					{
 						value:0,
-						label:"请选择",
+						label:this.subboxTips,
 						isCur:true
 					}
 				],
@@ -169,59 +173,69 @@
 				}
 			},
 			selectProvince(val,label,indexAry,index){
-				let isSelected = this.tabAry[indexAry];
+				let isSelected = this.tabAry[indexAry+1];
+				let child = this.listTree[indexAry][index].children;
 				let obj =  {
 					value:val,
 					label:label,
 					isCur:true
 				};
 				if(isSelected){
-					Vue.set(this.tabAry,indexAry,obj);
+					Vue.set(this.tabAry,indexAry+1,obj);
 				}else{
-					this.tabAry.push(obj);
+					if(child){
+						this.tabAry.push(obj);
+					}
 				}
 				this.selectCity(indexAry);
-				this.handleChildren(indexAry,index);
+				this.handleChildren(indexAry,index,obj);
 				if(this.isColor){
 					this.setColor();
 				}
+
 			},
-			handleChildren(indexAry,index){
+			handleChildren(indexAry,index,lastObj){
 				let hasChild = this.listTree[indexAry+1];
 				let child = this.listTree[indexAry][index].children;
 				if(hasChild){
 					this.listTree.splice(indexAry+1);
-					this.tabAry.splice(indexAry+1);
+					this.tabAry.splice(indexAry+2);
 				}
+				console.log(this.tabAry);
 				if(child){
 					this.listTree.push(child);
 					this.initTabAry(indexAry);
 					this.listIndex = indexAry+1;
 				}else{
-					this.showResult()
+					this.showResult(lastObj);
 					this.listIndex = indexAry;
 				}
 
 			},
 			initTabAry(indexAry){
-				let obj =  {
-					value:0,
-					label:"请选择",
-					isCur:true
-				};
-				this.tabAry.push(obj);
+				/*	let obj =  {
+						value:0,
+						label:"请选择",
+						isCur:true
+					};
+					this.tabAry.push(obj);*/
 				this.selectCity(indexAry+1);
 			},
-			showResult(){
+			showResult(lastObj){
 				this.isHover = false;
 				this.area = "";
 				this.resultVal = "";
-				this.tabAry.forEach(item=>{
-					this.area += item.label + "/";
-					this.resultVal += item.value + "/";
+				this.tabAry.forEach((item,index)=>{
+					if(index != 0){
+						this.area += item.label + "/";
+						this.resultVal += item.value + "/";
+					}
 				});
-				this.area = this.area.substring(0,this.area.length-1);
-				this.resultVal = this.resultVal.substring(0,this.resultVal.length-1);
+				//this.area = this.area.substring(0,this.area.length-1);
+				//this.resultVal = this.resultVal.substring(0,this.resultVal.length-1);
+				this.area += lastObj.label;
+				this.resultVal += lastObj.value;
+
 				this.$emit('input', this.area);
 				this.$emit('change', this.resultVal);
 				if(this.isClick){
@@ -303,7 +317,7 @@
 			top: 40px;
 			left: 0;
 			border: 1px solid #CECBCE;
-			width: 390px;
+			width: 500px;
 			padding: 12px 12px 15px;
 			background: #fff;
 			-moz-box-shadow: 0 0 5px #ddd;
@@ -384,6 +398,9 @@
 							display: block;
 							padding: 0 4px;
 							color: #005aa0;
+							&.cur{
+								color:red
+							}
 						}
 					}
 				}

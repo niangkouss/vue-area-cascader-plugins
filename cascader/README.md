@@ -65,5 +65,10 @@ datas:[
 <cascader :datas="datas"  @change="handlerChange" v-model="values" :trigger="click" :color="'red'"></cascader>
 ```
 color 接受字符串形式
+- 可设置下拉框第一页卡的内容
+```html
+<cascader :datas="datas"  @change="handlerChange" v-model="values" :subboxTips="第一页卡显示"></cascader>
+```
+subboxTips接受字符串类型
 
 
