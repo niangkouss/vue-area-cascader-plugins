@@ -42,6 +42,9 @@
 			},
 			trigger:{
 				type:String
+			},
+			color:{
+				type:String
 			}
 		},
 		data() {
@@ -67,7 +70,8 @@
 				hoverHeight:0,
 				wrapper:null,
 				isClick:this.trigger === 'click',
-				tag2:false
+				tag2:false,
+				isColor:false
 			}
 		},
 		beforeCreate() {
@@ -82,10 +86,7 @@
 			$("body .area-wrap").each( (index,obj)=> {
 				obj.dataset.tag == this.tag? this.wrapper = obj:void 0;
 			});
-			this.wrapHeight = $(this.wrapper).height();
-			this.hoverHeight = this.wrapHeight+1;
-			$(this.wrapper).children(".content-wrapper").css("top",this.wrapHeight);
-			$(this.wrapper).find(".text").css("line-height",this.wrapHeight+"px");
+			this.init();
 			if(this.isClick){
 				$("body").click((e)=>{
 					this.tag2 = false;
@@ -96,6 +97,11 @@
 						}
 					});
 				});
+			}
+			if(typeof this.color === 'string'){
+				this.isColor = true;
+				$(this.wrapper).find(".area-tab").css("border-bottom-color",this.color);
+				this.setColor();
 			}
 
 		},
@@ -112,6 +118,12 @@
 		destroyed() {
 		},
 		methods: {
+			init(){
+				this.wrapHeight = $(this.wrapper).height();
+				this.hoverHeight = this.wrapHeight+1;
+				$(this.wrapper).children(".content-wrapper").css("top",this.wrapHeight);
+				$(this.wrapper).find(".text").css("line-height",this.wrapHeight+"px");
+			},
 			toSelect(){
 				if(this.isClick){
 					return;
@@ -152,7 +164,9 @@
 				this.tabAry.forEach((item,ide)=>{
 					ide == index?item.isCur = true:item.isCur = false;
 				});
-
+				if(this.isColor){
+					this.setColor();
+				}
 			},
 			selectProvince(val,label,indexAry,index){
 				let isSelected = this.tabAry[indexAry];
@@ -168,6 +182,9 @@
 				}
 				this.selectCity(indexAry);
 				this.handleChildren(indexAry,index);
+				if(this.isColor){
+					this.setColor();
+				}
 			},
 			handleChildren(indexAry,index){
 				let hasChild = this.listTree[indexAry+1];
@@ -205,12 +222,19 @@
 				});
 				this.area = this.area.substring(0,this.area.length-1);
 				this.resultVal = this.resultVal.substring(0,this.resultVal.length-1);
-				this.$emit('change', this.resultVal);
 				this.$emit('input', this.area);
+				this.$emit('change', this.resultVal);
 				if(this.isClick){
 					this.leaveClick();
 				}
 
+			},
+			setColor(){
+				this.$nextTick(()=>{
+					$(this.wrapper).find(".area-tab a").css("border-color",'#ddd');
+					$(this.wrapper).find(".area-tab a.cur").css("border-color",this.color);
+					$(this.wrapper).find(".area-tab a.cur").css("border-bottom-color",'#fff');
+				});
 			}
 		},
 		filters: {},
