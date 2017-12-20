@@ -1,9 +1,9 @@
-###Cascader级联组件
+### Cascader级联组件
 
-####使用
+#### 使用
 1.在main.js中引入
 ```javascript
-import Cascader from './plugins/cascader_JD'
+import Cascader from './plugins/cascader'
 Vue.use(Cascader);
 ```
 2.结构
