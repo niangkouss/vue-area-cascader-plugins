@@ -87,28 +87,7 @@
 			this.tag = "area"+Math.random();
 		},
 		mounted() {
-			this.listTree[0] = this.datas;
-			$("body .area-wrap").each( (index,obj)=> {
-				obj.dataset.tag == this.tag? this.wrapper = obj:void 0;
-			});
 			this.init();
-			if(this.isClick){
-				$("body").click((e)=>{
-					this.tag2 = false;
-					let ary = $(e.target).parents();
-					ary.each((index)=>{
-						if($(ary[index]).hasClass('area-wrap') == true){
-							this.tag2 = true;
-						}
-					});
-				});
-			}
-			if(typeof this.color === 'string'){
-				this.isColor = true;
-				$(this.wrapper).find(".area-tab").css("border-bottom-color",this.color);
-				this.setColor();
-			}
-
 		},
 		beforeUpdate() {
 		},
@@ -124,10 +103,30 @@
 		},
 		methods: {
 			init(){
+				this.listTree[0] = this.datas;
+				$("body .area-wrap").each( (index,obj)=> {
+					obj.dataset.tag == this.tag? this.wrapper = obj:void 0;
+				});
 				this.wrapHeight = $(this.wrapper).height();
 				this.hoverHeight = this.wrapHeight+1;
 				$(this.wrapper).children(".content-wrapper").css("top",this.wrapHeight);
 				$(this.wrapper).find(".text").css("line-height",this.wrapHeight+"px");
+				if(this.isClick){
+					$("body").click((e)=>{
+						this.tag2 = false;
+						let ary = $(e.target).parents();
+						ary.each((index)=>{
+							if($(ary[index]).hasClass('area-wrap') == true){
+								this.tag2 = true;
+							}
+						});
+					});
+				}
+				if(typeof this.color === 'string'){
+					this.isColor = true;
+					$(this.wrapper).find(".area-tab").css("border-bottom-color",this.color);
+					this.setColor();
+				}
 			},
 			toSelect(){
 				if(this.isClick){
@@ -262,6 +261,9 @@
 
 		},
 		watch: {
+			datas(val){
+				this.init();
+			},
 			value(val) {
 				this.area = val;
 			},
